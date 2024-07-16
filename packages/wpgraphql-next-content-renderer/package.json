@@ -1,0 +1,57 @@
+{
+  "name": "@axistaylor/wpgraphql-next-content-renderer",
+  "version": "1.0.0",
+  "description": "Provides components and tooling to render WordPress page content on a 1:1 scale",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.mjs",
+      "require": "./dist/cjs/index.cjs",
+      "types": "./dist/types/index.d.ts"
+    },
+    "./withWCR": {
+      "import": "./dist/esm/withWCR.mjs",
+      "require": "./dist/cjs/withWCR.cjs",
+      "types": "./dist/types/withWCR.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "LICENSE"
+  ],
+  "dependencies": {
+    "html-react-parser": "^5.1.10",
+    "lodash": "^4.17.21",
+    "next": "^14.2.5",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^26.0.1",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-typescript": "^11.1.6",
+    "@types/lodash": "^4.17.6",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "rollup": "^4.18.0",
+    "rollup-plugin-dts": "^6.1.1",
+    "rollup-plugin-typescript-paths": "^1.5.0",
+    "ts-loader": "^9.5.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.2"
+  },
+  "scripts": {
+    "build:watch": "rollup -c --bundleConfigAsCjs --watch",
+    "build:clean": "rm -rf dist",
+    "build:files": "rollup -c --bundleConfigAsCjs",
+    "build": "npm run build:clean && npm run build:files",
+    "prepare": "npm run build"
+  },
+  "author": "Geoff Taylor <geoff@axistaylor.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/axistaylor/wpgraphql-next-content-renderer.git"
+  }
+}

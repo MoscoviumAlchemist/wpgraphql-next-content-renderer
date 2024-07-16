@@ -1,0 +1,16 @@
+{
+  "name": "e2e-tests",
+  "version": "1.0.0",
+  "private": true,
+  "description": "E2E Tests for WPGraphQL Next Content Renderer",
+  "main": "index.js",
+  "devDependencies": {
+    "cypress": "^13.13.0",
+    "cypress-plugin-stripe-elements": "^1.0.2"
+  },
+  "scripts": {
+    "cy:open": "cypress open --e2e -b chrome",
+    "cy:run": "cypress run --e2e -b chrome"
+  },
+  "author": "Geoff Taylor <support@axistaylor.com>"
+}

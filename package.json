@@ -1,0 +1,38 @@
+{
+  "name": "wpgraphql-next-content-renderer",
+  "version": "1.0.0",
+  "description": "Monorepo for WPGraphQL Next Content Renderer",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build -w ./packages/wpgraphql-next-content-renderer",
+    "update-demo-plugins": "npm run update-plugins -w ./packages/backend-4-examples",
+    "prepare": "npm run build",
+    "dev:package": "npm run build:watch -w ./packages/wpgraphql-next-content-renderer",
+    "dev:wp-backend":  "npm run docker -w ./packages/backend-4-examples",
+    "dev:wp-frontend": "npm run dev -w ./packages/example-01",
+    "dev:e2e": "npm run cy:open -w ./packages/e2e-tests",
+    "dev": "npm-run-all --parallel dev:package dev:wp-backend dev:wp-frontend dev:e2e",
+    "stop:wp-backend": "npm run docker:down -w ./packages/backend-4-examples",
+    "stop": "npm-run-all --parallel stop:wp-backend",
+    "save-wp-db": "npm run save-db -w ./packages/backend-4-examples"
+  },
+  "keywords": [
+    "wpgraphql",
+    "wordpress",
+    "react",
+    "nextjs",
+    "wordpress-content"
+  ],
+  "author": "Geoff Taylor <geoff@axistaylor.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/axistaylor/wpgraphql-next-content-renderer.git"
+  },
+  "devDependencies": {
+    "npm-run-all": "^4.1.5"
+  }
+}
