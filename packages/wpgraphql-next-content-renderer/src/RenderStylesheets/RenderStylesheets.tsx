@@ -27,14 +27,12 @@ function createLinkElement(href: string, id?: string, precedence?: 'low'|'medium
 
 let isInserted = new Set();
 export async function RenderStylesheets({ stylesheets }: RenderStylesheetsProps) {
-  
-
   useInsertionEffect(() => {
     stylesheets.map(({ src, handle }) => {
       if (src && !isInserted.has(handle)) {
         const href = src?.replace(
           new RegExp(`^((?:http(s)?:\/\/|\/\/)${escapeRegExp(process.env.wcr_wp_domain)})?\/(.*)$`),
-          `${process.env.wcr_frontend_url}/api/wp-assets/$2`,
+          `${process.env.wcr_frontend_url}/api/wp-assets/$3`,
         ) || '';
 
         isInserted.add(handle);

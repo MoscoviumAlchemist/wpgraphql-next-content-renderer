@@ -1,10 +1,16 @@
 import { NextRequest } from 'next/server';
-import { proxyMatcher, proxyByWCR } from '@axistaylor/wpgraphql-next-content-renderer/proxyByWCR';
+import { proxyByWCR } from '@axistaylor/wpgraphql-next-content-renderer/proxyByWCR';
 
 export const middleware = async (request: NextRequest) => {
-  return proxyByWCR(request)
+  return proxyByWCR(request);
 }
 
 export const config = {
-  matcher: proxyMatcher,
+  matcher: [
+    '/api/wp',
+    '/api/wc',
+    '/api/wp-internal-assets/:path*',
+    '/api/wp-assets/:path*',
+    '/api/wp-json/:path*',
+  ],
 }

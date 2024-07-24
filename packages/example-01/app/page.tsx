@@ -29,6 +29,7 @@ async function fetchContentAndScripts() {
                 version
                 after
                 group
+                location
                 before
                 extraData
               }
@@ -43,6 +44,7 @@ async function fetchContentAndScripts() {
         }
       }`,
     }),
+    cache: 'no-store',
   });
 
   const { data } = await response.json();

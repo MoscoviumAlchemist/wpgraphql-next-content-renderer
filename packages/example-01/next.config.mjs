@@ -9,9 +9,14 @@ const nextConfig = {
   }
 };
 
+const wpDomain = 'localhost:8080';
+const wpProtocol = 'http';
+
 export default withWCR(nextConfig, {
-  wpDomain: 'localhost:8080',
-  wpProtocol: 'http',
+  wpDomain,
+  wpProtocol,
+  wpHomeUrl: `${wpProtocol}://${wpDomain}`,
+  wpSiteUrl: `${wpProtocol}://${wpDomain}/wp`,
   frontendDomain: 'localhost:3000',
   frontendProtocol: 'http',
 });

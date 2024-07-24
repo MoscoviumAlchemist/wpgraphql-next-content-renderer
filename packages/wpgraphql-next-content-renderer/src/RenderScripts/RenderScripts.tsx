@@ -46,9 +46,15 @@ function ScriptMapper(script: EnqueuedScript) {
   const defer = loadingStrategy === ScriptLoadingStrategyEnum.DEFER || undefined;
   const strategy = location === ScriptLoadingGroupEnum.HEADER ? 'beforeInteractive' : 'afterInteractive';
 
-  let src = rawSrc || '';
-  if (src.startsWith('/')) {
-    src = `${process.env.wcr_wp_siteurl}${src}`
+  let src = '';
+  const isInternalRoute = new RegExp('^\/(?!\/)(.*)$');
+  if (rawSrc && isInternalRoute.test(rawSrc)) {
+    src = `${process.env.wcr_frontend_url}/api/wp-internal-assets${rawSrc}`;
+  } else {
+    src = rawSrc?.replace(
+      new RegExp(`^((?:http(s)?:\/\/|\/\/)${escapeRegExp(process.env.wcr_wp_domain)})?\/(.*)$`),
+      `${process.env.wcr_frontend_url}/api/wp-assets/$3`,
+    ) || '';
   }
 
   return (

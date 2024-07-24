@@ -1,15 +1,23 @@
-import { NextResponse, NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
-export async function proxyByWCR(request: NextRequest) {
+export async function proxyByWCR(request: Request & { nextUrl: { pathname: string } }) {
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set('x-url', request.url);
   const nextPath = request.nextUrl.pathname;
 
   //Proxy handler for WP assets e.g. (.js, .css, .png, etc.)
+  if (nextPath.startsWith('/api/wp-internal-assets')) {
+    const scriptUrl = nextPath.replace(
+      /^\/api\/wp-internal-assets\/(.*)/,
+      `${process.env.wcr_wp_siteurl}/$1`
+    );
+
+    return NextResponse.rewrite(scriptUrl);
+  }
   if (nextPath.startsWith('/api/wp-assets')) {
     const scriptUrl = nextPath.replace(
       /^\/api\/wp-assets\/(.*)/,
-      `${process.env.wcr_wp_siteurl}/$1`
+      `${process.env.wcr_wp_homeurl}/$1`
     );
 
     return NextResponse.rewrite(scriptUrl);
@@ -19,7 +27,7 @@ export async function proxyByWCR(request: NextRequest) {
   if (nextPath.startsWith('/api/wp-json')) {
     const url = new URL(request.url);
     const params = url.searchParams;
-    const backendRoute = nextPath.replace(/^\/api\/wp\-json\/(.*)/, `${process.env.wcr_wp_url}/wp-json/$1?${params.toString()}`);
+    const backendRoute = nextPath.replace(/^\/api\/wp\-json\/(.*)/, `${process.env.wcr_wp_homeurl}/wp-json/$1?${params.toString()}`);
     
     const headers = new Headers(request.headers);
     headers.set('x-middleware-rewrite', backendRoute);
@@ -59,7 +67,7 @@ export async function proxyByWCR(request: NextRequest) {
   });
 }
 
-export const proxyMatcher = ['/api/wp', '/api/wc', '/api/wp-assets/:path*', '/api/wp-json/:path*'];
+export const proxyMatcher = ['/api/wp', '/api/wc', '/api/wp-internal-assets/:path*', '/api/wp-assets/:path*', '/api/wp-json/:path*'];
 
 export const isProxiedRoute = (path: string) => {
   return proxyMatcher.includes(path);
