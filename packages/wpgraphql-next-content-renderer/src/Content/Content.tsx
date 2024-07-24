@@ -29,7 +29,8 @@ export default function parseHtml(
         );
       }
 
-      if (name === 'br' || name === 'hr' || name === 'input') {
+      const voidElements = ['br', 'hr', 'input', 'img', 'link', 'meta'];
+      if (voidElements.includes(name)) {
         return (<Component {...props} />);
       }
 

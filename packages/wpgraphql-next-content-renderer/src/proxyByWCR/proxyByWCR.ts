@@ -9,7 +9,7 @@ export async function proxyByWCR(request: NextRequest) {
   if (nextPath.startsWith('/api/wp-assets')) {
     const scriptUrl = nextPath.replace(
       /^\/api\/wp-assets\/(.*)/,
-      `${process.env.wcr_wp_url}/$1`
+      `${process.env.wcr_wp_siteurl}/$1`
     );
 
     return NextResponse.rewrite(scriptUrl);
@@ -38,11 +38,11 @@ export async function proxyByWCR(request: NextRequest) {
     const params = url.searchParams;
     let backendRoute: string;
     if (nextPath === '/api/wc') {
-      backendRoute = `${process.env.wcr_wp_url}/?${params.toString()}`;
+      backendRoute = `${process.env.wcr_wp_homeurl}/?${params.toString()}`;
     } else if (nextPath === '/api/wp-json') {
-      backendRoute = nextPath.replace(/^\/api\/wp\-json\/(.*)/, `${process.env.wcr_wp_url}/wp-json/$1`);
+      backendRoute = nextPath.replace(/^\/api\/wp\-json\/(.*)/, `${process.env.wcr_wp_homeurl}/wp-json/$1`);
     } else {
-      backendRoute = `${process.env.wcr_wp_url}/wp-admin/admin-ajax.php?${params.toString()}`;
+      backendRoute = `${process.env.wcr_wp_homeurl}/wp-admin/admin-ajax.php?${params.toString()}`;
     }
     headers.set('x-middleware-rewrite', backendRoute);
 
@@ -59,10 +59,8 @@ export async function proxyByWCR(request: NextRequest) {
   });
 }
 
-export const proxyMatcher = {
-  matcher: ['/api/wp', '/api/wc', '/api/wp-assets/:path*', '/api/wp-json/:path*'],
-}
+export const proxyMatcher = ['/api/wp', '/api/wc', '/api/wp-assets/:path*', '/api/wp-json/:path*'];
 
 export const isProxiedRoute = (path: string) => {
-  return proxyMatcher.matcher.includes(path);
+  return proxyMatcher.includes(path);
 }

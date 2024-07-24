@@ -34,9 +34,7 @@ export default [
     external: [
       'next',
       'next/script',
-      'next/server',
       'react',
-      'react-dom',
       'lodash',
     ],
   },
@@ -55,9 +53,56 @@ export default [
     external: [
       'next',
       'next/script',
-      'next/server',
       'react',
-      'react-dom',
+      'lodash',
+    ],
+  },
+  {
+    input: 'src/index.client.ts',
+    output: [
+      {
+        file: packageJson.exports["./client"].require,
+        format: "cjs",
+        sourcemap: true,
+        exports: 'named',
+      },
+      {
+        file: packageJson.exports["./client"].import,
+        format: "esm",
+        sourcemap: true,
+        exports: 'named',
+      },
+    ],
+    plugins: [
+      typescript({ tsconfig: './tsconfig.json' }), // This tells the plugin to prefer built-in modules (like 'path') over local ones
+      resolve({ extensions: [".tsx", ".ts"] }),
+      commonjs(),
+      terser(),
+      typescriptPaths()
+    ],
+    external: [
+      'next',
+      'next/script',
+      'react',
+      'lodash',
+    ],
+  },
+  {
+    input: "src/index.client.ts",
+    output: [{
+      file: packageJson.exports["./client"].types,
+      format: "es",
+    }],
+    plugins: [
+      dts(),
+      typescript({ tsconfig: './tsconfig.json' }),
+      resolve({ extensions: [".tsx", ".ts"] }),
+      typescriptPaths()
+    ],
+    external: [
+      'next',
+      'next/script',
+      'react',
       'lodash',
     ],
   },
@@ -96,6 +141,51 @@ export default [
       typescript({ tsconfig: './tsconfig.json' }),
       resolve({ extensions: [".tsx", ".ts"] }),
       typescriptPaths()
+    ],
+  },
+  {
+    input: 'src/proxyByWCR/index.ts',
+    output: [
+      {
+        file: packageJson.exports["./proxyByWCR"].require,
+        format: "cjs",
+        sourcemap: true,
+        exports: 'named',
+      },
+      {
+        file: packageJson.exports["./proxyByWCR"].import,
+        format: "esm",
+        sourcemap: true,
+        exports: 'named',
+      },
+    ],
+    plugins: [
+      typescript({ tsconfig: './tsconfig.json' }), // This tells the plugin to prefer built-in modules (like 'path') over local ones
+      resolve({ extensions: [".tsx", ".ts"] }),
+      commonjs(),
+      terser(),
+      typescriptPaths()
+    ],
+    external: [
+      'next',
+      'next/server',
+    ],
+  },
+  {
+    input: "src/proxyByWCR/index.ts",
+    output: [{
+      file: packageJson.exports["./proxyByWCR"].types,
+      format: "es",
+    }],
+    plugins: [
+      dts(),
+      typescript({ tsconfig: './tsconfig.json' }),
+      resolve({ extensions: [".tsx", ".ts"] }),
+      typescriptPaths()
+    ],
+    external: [
+      'next',
+      'next/server',
     ],
   },
 ];

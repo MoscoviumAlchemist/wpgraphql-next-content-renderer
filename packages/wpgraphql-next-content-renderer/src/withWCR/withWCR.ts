@@ -8,22 +8,29 @@ type WPConfig = {
 }
 
 type OptionalWPConfig = {
-
+  wpHomeUrl: string;
+  wpSiteUrl: string;
 };
 
 export function withWCR(config: NextConfig, wpConfig: WPConfig & Partial<OptionalWPConfig>) {
-  const {
+  let {
     wpDomain,
     wpProtocol,
+    wpHomeUrl,
+    wpSiteUrl,
     frontendDomain,
     frontendProtocol,
   } = wpConfig;
+  wpHomeUrl = wpHomeUrl || `${wpProtocol}://${wpDomain}`;
+  wpSiteUrl = wpSiteUrl || wpHomeUrl;
+
   const newConfig = {
     ...config,
     env: {
       ...config.env,
       wcr_wp_domain: wpDomain,
-      wcr_wp_url: `${wpProtocol}://${wpDomain}`,
+      wcr_wp_homeurl: wpHomeUrl,
+      wcr_wp_siteurl: wpSiteUrl,
       wcr_frontend_domain: frontendDomain,
       wcr_frontend_url: `${frontendProtocol}://${frontendDomain}`,
     },

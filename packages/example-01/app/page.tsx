@@ -1,8 +1,8 @@
 import {
   Content,
   RenderScripts,
-  RenderStylesheets
 } from '@axistaylor/wpgraphql-next-content-renderer';
+import Styles from '@/components/Styles';
 
 async function fetchContentAndScripts() {
   const response = await fetch(process.env.GRAPHQL_ENDPOINT as string, {
@@ -10,7 +10,7 @@ async function fetchContentAndScripts() {
     headers: {'Content-Type': 'application/json'},
     body: JSON.stringify({
       query: `query {
-        nodeByUri(uri: "/sample-page") {
+        nodeByUri(uri: "/example-page") {
           ... on ContentNode {
             enqueuedStylesheets(first: 500) {
               nodes {
@@ -76,7 +76,7 @@ export default async function Home() {
 
   return (
     <>
-      <RenderStylesheets stylesheets={stylesheets} />
+      <Styles stylesheets={stylesheets} />
       <RenderScripts scripts={scripts}>
         <Content content={content} />
       </RenderScripts>

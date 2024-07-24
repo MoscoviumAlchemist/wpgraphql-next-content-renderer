@@ -13,6 +13,16 @@
       "import": "./dist/esm/withWCR.mjs",
       "require": "./dist/cjs/withWCR.cjs",
       "types": "./dist/types/withWCR.d.ts"
+    },
+    "./proxyByWCR": {
+      "import": "./dist/esm/proxyByWCR.mjs",
+      "require": "./dist/cjs/proxyByWCR.cjs",
+      "types": "./dist/types/proxyByWCR.d.ts"
+    },
+    "./client": {
+      "import": "./dist/esm/client.mjs",
+      "require": "./dist/cjs/client.cjs",
+      "types": "./dist/types/client.d.ts"
     }
   },
   "files": [
@@ -21,10 +31,7 @@
   ],
   "dependencies": {
     "html-react-parser": "^5.1.10",
-    "lodash": "^4.17.21",
-    "next": "^14.2.5",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "lodash": "^4.17.21"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^26.0.1",
@@ -33,13 +40,18 @@
     "@rollup/plugin-typescript": "^11.1.6",
     "@types/lodash": "^4.17.6",
     "@types/react": "^18.3.3",
-    "@types/react-dom": "^18.3.0",
+    "next": "^14.2.5",
+    "react": "^18.3.1",
     "rollup": "^4.18.0",
     "rollup-plugin-dts": "^6.1.1",
     "rollup-plugin-typescript-paths": "^1.5.0",
     "ts-loader": "^9.5.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.5.2"
+  },
+  "peerDependencies": {
+    "next": ">=14.2.5",
+    "react": ">=18.3.1"
   },
   "scripts": {
     "build:watch": "rollup -c --bundleConfigAsCjs --watch",

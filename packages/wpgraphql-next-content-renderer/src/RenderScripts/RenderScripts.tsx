@@ -32,11 +32,11 @@ function ScriptMapper(script: EnqueuedScript) {
   switch (handle) {
     case 'wp-api-fetch':
       afterScript = afterScript?.replace(
-        new RegExp(`((http:\/\/|\/\/)${escapeRegExp(process.env.wcr_wp_domain)}\/wp\-json)`),
+        new RegExp(`(((https?:)?\/\/|\/\/)${escapeRegExp(process.env.wcr_wp_domain)}\/wp\-json)`),
         `${process.env.wcr_frontend_url}/wp-json`,
       );
       afterScript = afterScript?.replace(
-        new RegExp(`((http:\/\/|\/\/)${escapeRegExp(process.env.wcr_wp_domain)}\/wp\-admin\/admin\-ajax\.php)`),
+        new RegExp(`(((https?:)?\/\/|\/\/)${escapeRegExp(process.env.wcr_wp_domain)}\/wp\-admin\/admin\-ajax\.php)`),
         `${process.env.wcr_frontend_url}/api/wp`,
       );
       break;
@@ -48,7 +48,7 @@ function ScriptMapper(script: EnqueuedScript) {
 
   let src = rawSrc || '';
   if (src.startsWith('/')) {
-    src = `${process.env.BACKEND_URL}${src}`
+    src = `${process.env.wcr_wp_siteurl}${src}`
   }
 
   return (

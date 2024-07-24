@@ -1,5 +1,4 @@
-import React, { Fragment, FC, ReactNode } from 'react';
-import { preinit } from "react-dom";
+import React, { Fragment, FC, ReactNode, useInsertionEffect } from 'react';
 
 import { EnqueuedStylesheet } from "@/types";
 import { escapeRegExp } from 'lodash';
@@ -17,23 +16,39 @@ type RenderStylesheetsProps = {
   stylesheets: EnqueuedStylesheet[];
 };
 
+function createLinkElement(href: string, id?: string, precedence?: 'low'|'medium'|'high') {
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = href;
+  link.id = id || '';
+  link.dataset.precedence = precedence || 'medium';
+  return link;
+}
+
+let isInserted = new Set();
 export async function RenderStylesheets({ stylesheets }: RenderStylesheetsProps) {
-  stylesheets.map((stylesheet) => {
-    if (stylesheet.src) {
-      const src = stylesheet.src?.replace(
-        new RegExp(`^((?:http:\/\/|\/\/)${escapeRegExp(process.env.wcr_wp_domain)})?\/(.*)$`),
-        `${process.env.wcr_frontend_url}/api/wp-assets/$2`,
-      ) || '';
-      src && preinit(src, { as: 'style', precedence: 'medium', crossOrigin: 'anonymous' });
-    }
+  
+
+  useInsertionEffect(() => {
+    stylesheets.map(({ src, handle }) => {
+      if (src && !isInserted.has(handle)) {
+        const href = src?.replace(
+          new RegExp(`^((?:http(s)?:\/\/|\/\/)${escapeRegExp(process.env.wcr_wp_domain)})?\/(.*)$`),
+          `${process.env.wcr_frontend_url}/api/wp-assets/$2`,
+        ) || '';
+
+        isInserted.add(handle);
+        document.head.appendChild(createLinkElement(href));
+      }
+    });
   });
   
   return (
     <Fragment>
       {stylesheets.map((stylesheet) => {
         const { handle } = stylesheet;
-        const src = stylesheet.src?.startsWith('/wp-')
-          ? `${process.env.BACKEND_URL}${stylesheet.src}`
+        const src = stylesheet.src?.startsWith('/')
+          ? `${process.env.wcr_wp_siteurl}${stylesheet.src}`
           : stylesheet.src;
         return (
           <Fragment key={handle}>
