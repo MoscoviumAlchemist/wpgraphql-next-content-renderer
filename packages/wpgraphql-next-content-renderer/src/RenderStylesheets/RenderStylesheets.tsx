@@ -26,7 +26,7 @@ function createLinkElement(href: string, id?: string, precedence?: 'low'|'medium
 }
 
 let isInserted = new Set();
-export async function RenderStylesheets({ stylesheets }: RenderStylesheetsProps) {
+export function RenderStylesheets({ stylesheets }: RenderStylesheetsProps) {
   useInsertionEffect(() => {
     stylesheets.map(({ src, handle }) => {
       if (src && !isInserted.has(handle)) {
