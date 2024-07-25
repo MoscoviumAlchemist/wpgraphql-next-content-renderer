@@ -10,7 +10,7 @@ async function fetchContentAndScripts() {
     headers: {'Content-Type': 'application/json'},
     body: JSON.stringify({
       query: `query {
-        nodeByUri(uri: "/example-page") {
+        nodeByUri(uri: "/sample-page") {
           ... on ContentNode {
             enqueuedStylesheets(first: 500) {
               nodes {
@@ -76,11 +76,15 @@ export default async function Home() {
     stylesheets,
   } = await fetchContentAndScripts();
 
+  console.log('content', content);
+
   return (
     <>
       <Styles stylesheets={stylesheets} />
       <RenderScripts scripts={scripts}>
-        <Content content={content} />
+        <div id="main-content" className="min-h-screen px-4 pt-4">
+          <Content content={content} />
+        </div>
       </RenderScripts>
     </>
   );
