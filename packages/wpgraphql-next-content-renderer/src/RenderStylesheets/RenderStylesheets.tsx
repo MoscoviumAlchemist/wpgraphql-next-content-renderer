@@ -1,4 +1,11 @@
-import React, { Fragment, FC, ReactNode, useInsertionEffect } from 'react';
+import React, {
+  Fragment,
+  FC,
+  ReactNode,
+  useInsertionEffect,
+  useEffect,
+  useState,
+} from 'react';
 
 import { EnqueuedStylesheet } from "@/types";
 import { escapeRegExp } from 'lodash';
@@ -27,7 +34,16 @@ function createLinkElement(href: string, id?: string, precedence?: 'low'|'medium
 
 let isInserted = new Set();
 export function RenderStylesheets({ stylesheets }: RenderStylesheetsProps) {
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   useInsertionEffect(() => {
+    if (!isMounted) {
+      return;
+    }
+
     stylesheets.map(({ src, handle }) => {
       if (src && !isInserted.has(handle)) {
         const href = src?.replace(
@@ -39,7 +55,11 @@ export function RenderStylesheets({ stylesheets }: RenderStylesheetsProps) {
         document.head.appendChild(createLinkElement(href));
       }
     });
-  });
+  }, [isMounted]);
+
+  if (!isMounted) {
+    return null;
+  }
   
   return (
     <Fragment>
