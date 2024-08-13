@@ -43,7 +43,7 @@ export type EnqueuedScript = {
   /** The HTML conditional comment for the enqueued asset. E.g. IE 6, lte IE 7, etc */
   conditional?: Maybe<Scalars['String']['output']>;
   /** Handles of dependencies needed to use this asset */
-  dependencies?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  dependencies?: Maybe<Array<Maybe<EnqueuedScript>>>;
   /**
    * Extra information needed for the script
    * @deprecated Use `EnqueuedScript.extraData` instead.
@@ -81,7 +81,7 @@ export type EnqueuedStylesheet = {
   /** The HTML conditional comment for the enqueued asset. E.g. IE 6, lte IE 7, etc */
   conditional?: Maybe<Scalars['String']['output']>;
   /** Handles of dependencies needed to use this asset */
-  dependencies?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  dependencies?: Maybe<Array<Maybe<EnqueuedStylesheet>>>;
   /**
    * Extra information needed for the script
    * @deprecated Use `EnqueuedScript.extraData` instead.

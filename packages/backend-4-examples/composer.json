@@ -27,6 +27,7 @@
     "roots/wp-config": "1.0.0",
     "roots/wp-password-bcrypt": "1.1.0",
     "vlucas/phpdotenv": "^5.5",
+    "wp-graphql/wp-graphql-jwt-authentication": "*",
     "wp-graphql/wp-graphql-woocommerce": "*",
     "wpackagist-plugin/code-snippets": "*",
     "wpackagist-plugin/query-monitor": "*",
