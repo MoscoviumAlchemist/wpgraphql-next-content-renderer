@@ -1,4 +1,7 @@
-import React, { Fragment, PropsWithChildren, useState } from 'react';
+import React, {
+  Fragment,
+  PropsWithChildren,
+} from 'react';
 import Script from 'next/script';
 import { escapeRegExp } from 'lodash';
 
@@ -8,14 +11,11 @@ import {
   EnqueuedScript,
 } from "@/types";
 
-interface RenderScriptProps {
-  script: EnqueuedScript;
-  loaded: string[];
-  onReady: (handle: string) => void;
-}
+interface RenderScriptProps { script: EnqueuedScript; }
 
 function RenderScript(props: RenderScriptProps) {
-  const { script, loaded, onReady } = props;
+  const { script } = props;
+
   const {
     src: rawSrc,
     handle,
@@ -25,8 +25,6 @@ function RenderScript(props: RenderScriptProps) {
     after,
     extraData,
   } = script;
-
-  const dependencies: string[] = script.dependencies?.map((dependency) => dependency?.handle as string) || [];
 
   let beforeScript: string|undefined;
   if (before) {
@@ -42,7 +40,7 @@ function RenderScript(props: RenderScriptProps) {
     case 'wp-api-fetch':
       afterScript = afterScript?.replace(
         new RegExp(`(((https?:)?\/\/|\/\/)${escapeRegExp(process.env.wcr_wp_domain)}\/wp\-json)`),
-        `${process.env.wcr_frontend_url}/wp-json`,
+        `${process.env.wcr_frontend_url}/api/wp-json`,
       );
       afterScript = afterScript?.replace(
         new RegExp(`(((https?:)?\/\/|\/\/)${escapeRegExp(process.env.wcr_wp_domain)}\/wp\-admin\/admin\-ajax\.php)`),
@@ -51,7 +49,7 @@ function RenderScript(props: RenderScriptProps) {
       break;
   }
 
-  const async = loadingStrategy === ScriptLoadingStrategyEnum.ASYNC || false;
+  const async = loadingStrategy === ScriptLoadingStrategyEnum.ASYNC || undefined;
   const defer = loadingStrategy === ScriptLoadingStrategyEnum.DEFER || undefined;
   const strategy = location === ScriptLoadingGroupEnum.HEADER ? 'beforeInteractive' : 'afterInteractive';
 
@@ -66,72 +64,71 @@ function RenderScript(props: RenderScriptProps) {
     ) || '';
   }
 
-  if (dependencies?.length && !dependencies.every((dependency) => loaded.includes(dependency))) {
-    return null;
-  }
+  const ExtraDataScript = extraData && (
+    <Script
+      id={`${handle}-extra`}
+      dangerouslySetInnerHTML={{ __html: extraData }}
+      strategy={strategy}
+    />
+  );
+
+  const BeforeScript = beforeScript && (
+    <Script
+      id={`${handle}-before`}
+      dangerouslySetInnerHTML={{ __html: beforeScript }}
+      strategy={strategy}
+    />
+  );
+
+  const MainScript = rawSrc && (
+    <Script
+      id={handle as string}
+      src={src as string}
+      strategy={strategy}
+      async={async}
+      defer={defer}
+    />
+  );
+
+  const AfterScript = afterScript && (
+    <Script
+      id={`${handle}-after`}
+      dangerouslySetInnerHTML={{ __html: afterScript }}
+      strategy={strategy}
+    />
+  );
 
   return (
     <Fragment key={handle}>
-      {extraData && (
-        <Script
-          id={`${handle}-extra`}
-          dangerouslySetInnerHTML={{ __html: extraData }}
-          strategy={strategy}
-        />
-      )}
-      {beforeScript && (
-        <Script
-          id={`${handle}-before`}
-          dangerouslySetInnerHTML={{ __html: beforeScript }}
-          strategy={strategy}
-        />
-      )}
-      <Script
-        id={handle as string}
-        src={src as string}
-        strategy={strategy}
-        async={async}
-        defer={defer}
-        onLoad={() => onReady(handle as string)}
-        onReady={() => onReady(handle as string)}
-      />
-      {afterScript && loaded.includes(handle as string) && (
-        <Script
-          id={`${handle}-after`}
-          dangerouslySetInnerHTML={{ __html: afterScript }}
-          strategy={strategy}
-        />
-      )}
+      {ExtraDataScript}
+      {BeforeScript}
+      {MainScript}
+      {AfterScript}
     </Fragment>
   );
 }
 
 type RenderScriptsProps = { scripts: EnqueuedScript[], type?: 'header' | 'footer' };
 
-export function RenderScripts({ scripts, type, children }: PropsWithChildren<RenderScriptsProps>) {
-  const [loaded, updateLoaded] = useState<string[]>([]);
-  const onReady = (handle: string) => {
-    updateLoaded((prev) => [...prev, handle].filter((value, index, self) => self.indexOf(value) === index));
-  }
-
+export async function RenderScripts({ scripts, type, children }: PropsWithChildren<RenderScriptsProps>) {
   const headerScripts = scripts
     .filter((script) => script.location === ScriptLoadingGroupEnum.HEADER)
   const footerScripts = scripts
     .filter((script) => script.location === ScriptLoadingGroupEnum.FOOTER)
 
   if (type === 'header') {
-    return <>{headerScripts.map((script) => <RenderScript key={script.handle} script={script} loaded={loaded} onReady={onReady} />)}</>;
+    return <>{headerScripts.map((script) => <RenderScript key={script.handle} script={script} />)}</>;
   }
 
   if (type === 'footer') {
-    return <>{footerScripts.map((script) => <RenderScript key={script.handle} script={script} loaded={loaded} onReady={onReady} />)}</>;
+    return <>{footerScripts.map((script) => <RenderScript key={script.handle} script={script} />)}</>;
   }
 
   return (
     <Fragment>
-      {headerScripts.map((script) => <RenderScript key={script.handle} script={script} loaded={loaded} onReady={onReady} />)}
+      {headerScripts.map((script) => <RenderScript key={script.handle} script={script} />)}
       {children}
-      {footerScripts.map((script) => <RenderScript key={script.handle} script={script} loaded={loaded} onReady={onReady} />)}
+      {footerScripts.map((script) => <RenderScript key={script.handle} script={script} />)}
     </Fragment>
   );
 }

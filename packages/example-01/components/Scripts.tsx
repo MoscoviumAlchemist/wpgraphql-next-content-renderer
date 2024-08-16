@@ -1,7 +1,5 @@
-'use client';
-
-import type { PropsWithChildren, ReactNode } from 'react';
-import { RenderScripts, EnqueuedScript } from "@axistaylor/wpgraphql-next-content-renderer/client";
+import type { PropsWithChildren } from 'react';
+import { RenderScripts, EnqueuedScript } from "@axistaylor/wpgraphql-next-content-renderer";
 
 
 export interface ScriptsProps {

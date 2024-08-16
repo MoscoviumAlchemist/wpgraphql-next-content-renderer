@@ -21,7 +21,7 @@ export function Product() {
   }
   
   return (
-    <div>
+    <div className="px-4 py-8 flex flex-col justify-center">
       <h1>{get('name')}</h1>
       <p>{get('price')}</p>
       {get('type') === 'VARIABLE' && (
