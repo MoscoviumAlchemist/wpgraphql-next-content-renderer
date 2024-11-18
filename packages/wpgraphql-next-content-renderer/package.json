@@ -1,7 +1,10 @@
 {
   "name": "@axistaylor/wpgraphql-next-content-renderer",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "Provides components and tooling to render WordPress page content on a 1:1 scale",
+  "publishConfig": {
+    "access": "public"
+  },
   "type": "module",
   "exports": {
     ".": {

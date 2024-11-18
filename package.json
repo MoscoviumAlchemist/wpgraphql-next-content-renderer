@@ -1,6 +1,6 @@
 {
   "name": "wpgraphql-next-content-renderer",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "Monorepo for WPGraphQL Next Content Renderer",
   "private": true,
   "workspaces": [
