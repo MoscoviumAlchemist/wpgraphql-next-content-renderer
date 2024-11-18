@@ -8,7 +8,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@axistaylor/wpgraphql-next-content-renderer": "^1.0.0",
+    "@axistaylor/wpgraphql-next-content-renderer": "file:../wpgraphql-next-content-renderer",
     "next": "14.2.5",
     "react": "^18",
     "react-dom": "^18"
