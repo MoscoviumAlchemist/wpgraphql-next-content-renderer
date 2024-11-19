@@ -1,6 +1,6 @@
 {
   "name": "wpgraphql-next-content-renderer",
-  "version": "0.0.1",
+  "version": "0.0.2-0",
   "description": "Monorepo for WPGraphQL Next Content Renderer",
   "private": true,
   "workspaces": [
@@ -11,7 +11,7 @@
     "update-demo-plugins": "npm run update-plugins -w ./packages/backend-4-examples",
     "prepare": "npm run build",
     "dev:package": "npm run build:watch -w ./packages/wpgraphql-next-content-renderer",
-    "dev:wp-backend":  "npm run docker -w ./packages/backend-4-examples",
+    "dev:wp-backend": "npm run docker -w ./packages/backend-4-examples",
     "dev:wp-frontend": "npm run dev -w ./packages/example-01",
     "dev:e2e": "npm run cy:open -w ./packages/e2e-tests",
     "dev": "npm-run-all --parallel dev:package dev:wp-backend dev:wp-frontend dev:e2e",
