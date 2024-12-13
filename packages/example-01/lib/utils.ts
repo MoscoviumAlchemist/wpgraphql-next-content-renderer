@@ -59,34 +59,34 @@ export async function fetchStylesAndScriptsByUri(uri: string): Promise<{ scripts
     headers,
     body: JSON.stringify({
       query: `query ($uri: String!) {
-        nodeByUri(uri: $uri) {
-          ... on ContentNode {
-            enqueuedStylesheets(first: 500) {
-              nodes {
+        assetsByUri(uri: $uri) {
+          id
+          uri
+          enqueuedStylesheets(first: 500) {
+            nodes {
+              handle
+              src
+              version
+              after
+              before
+              dependencies {
                 handle
-                src
-                version
-                after
-                before
-                dependencies {
-                  handle
-                }
               }
             }
-            enqueuedScripts(first: 500) {
-              nodes {
+          }
+          enqueuedScripts(first: 500) {
+            nodes {
+              handle
+              src
+              strategy
+              version
+              after
+              group
+              location
+              before
+              extraData
+              dependencies {
                 handle
-                src
-                strategy
-                version
-                after
-                group
-                location
-                before
-                extraData
-                dependencies {
-                  handle
-                }
               }
             }
           }

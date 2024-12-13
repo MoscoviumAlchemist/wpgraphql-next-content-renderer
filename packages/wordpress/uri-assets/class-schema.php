@@ -2,11 +2,14 @@
 /**
  * Class Schema
  * 
- * @package NextPress
+ * @package NextPress\Uri_Assets;
  * @since 0.0.1
  */
 
-namespace NextPress;
+namespace NextPress\Uri_Assets;
+
+use WPGraphQL\Data\Connection\EnqueuedScriptsConnectionResolver;
+use WPGraphQL\Data\Connection\EnqueuedStylesheetConnectionResolver;
 
 class Schema {
     /**
@@ -46,14 +49,21 @@ class Schema {
                     ],
                 ],
                 'connections' => [
-                    'enqueuedScripts' => [
-                        'toType' => 'EnqueuedScript',
-                        'description' => __( 'The scripts enqueued on the uri/path/route.', 'nextpress' ),
-                    ],
-                    'enqueuedStyles' => [
-                        'toType' => 'EnqueuedStylesheets',
-                        'description' => __( 'The scripts enqueued on the uri/path/route.', 'nextpress' ),
-                    ],
+                    'enqueuedScripts'     => [
+						'toType'  => 'EnqueuedScript',
+						'resolve' => static function ( $source, $args, $context, $info ) {
+							$resolver = new EnqueuedScriptsConnectionResolver( $source, $args, $context, $info );
+
+							return $resolver->get_connection();
+						},
+					],
+					'enqueuedStylesheets' => [
+						'toType'  => 'EnqueuedStylesheet',
+						'resolve' => static function ( $source, $args, $context, $info ) {
+							$resolver = new EnqueuedStylesheetConnectionResolver( $source, $args, $context, $info );
+							return $resolver->get_connection();
+						},
+					],
                 ],
             ]
         );
@@ -65,12 +75,12 @@ class Schema {
                 'type' => 'UriAssets',
                 'args' => [
                     'uri' => [
-                        'type' => 'String',
+                        'type' => ['non_null' => 'String' ],
                         'description' => __( 'The URI of the asset to query.', 'nextpress' ),
                     ],
                 ],
                 'resolve' => function ( $root, $args, $context, $info ) {
-                    
+                    return $context->get_loader( 'uri_assets' )->load( $args['uri'] );
                 },
             ]
         );
