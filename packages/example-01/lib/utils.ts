@@ -1,5 +1,5 @@
 import { cookies } from 'next/headers';
-import { EnqueuedScript, EnqueuedStylesheet } from "@axistaylor/wpgraphql-next-content-renderer";
+import { EnqueuedScript, EnqueuedStylesheet } from "nextpress";
 
 export async function fetchContentByUri(uri: string): Promise<string> {
   const sessionToken = cookies().get('sessionToken')?.value;
