@@ -34,6 +34,52 @@ class Schema {
      * @return void
      */
     public function register_schema() {
+        register_graphql_enum_type(
+			'ScriptLoadingGroupEnum',
+			[
+				'description' => __( 'Locations for script to be loaded', 'nextpress' ),
+				'values'      => [
+					'HEADER' => [
+						'value'       => 0,
+						'description' => __( 'Script to be loaded in document `<head>` tags', 'nextpress' ),
+					],
+					'FOOTER' => [
+						'value'       => 1,
+						'description' => __( 'Script to be loaded in document at right before the closing `<body>` tag', 'nextpress' ),
+					],
+				],
+			]
+		);
+
+        register_graphql_field(
+            'EnqueuedAsset',
+            'group',
+            [
+                'type'        => 'Integer',
+                'description' => __( 'The loading group to which this asset belongs.', 'nextpress' ),
+                'resolve'     => static function ( $asset ) {
+                    if ( ! isset( $asset->extra['group'] ) ) {
+                        return 0;
+                    }
+
+                    return absint( $asset->extra['group'] );
+                },
+            ]
+        );
+
+        register_graphql_field(
+            'EnqueuedScript',
+            'location',
+            [
+                'type'        => 'ScriptLoadingGroupEnum',
+                'description' => __( 'The location where this script should be loaded', 'nextpress' ),
+                'resolve'     => static function ( \_WP_Dependency $script ) {
+                    return Model::get_script_location( $script );
+                },
+            ]
+        );
+
+        // Register the URI Assets type
         register_graphql_object_type(
             'UriAssets',
             [
@@ -53,7 +99,6 @@ class Schema {
 						'toType'  => 'EnqueuedScript',
 						'resolve' => static function ( $source, $args, $context, $info ) {
 							$resolver = new EnqueuedScriptsConnectionResolver( $source, $args, $context, $info );
-
 							return $resolver->get_connection();
 						},
 					],

@@ -56,7 +56,45 @@ class Model extends Base {
 		return false;
 	}
 
-    	/**
+	/**
+	 * Determines if assets dependencies are all loaded in the footer.
+	 * 
+	 * @param \_WP_Dependency $script  The script to check.
+	 *
+	 * @return bool
+	 */
+	public static function all_dependencies_in_footer( \_WP_Dependency $script ) {
+		$dependencies = $script->deps;
+		foreach ( $dependencies as $handle ) {
+			$dependency = wp_scripts()->registered[ $handle ];
+			if ( 1 === self:: get_script_location( $dependency ) ) {
+				continue;
+			}
+
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Get the location of a script
+	 *
+	 * @return bool
+	 */
+	public static function get_script_location( \_WP_Dependency $script ) {
+		if ( ! isset( $script->extra['group'] ) ) {
+			return 0;
+		}
+
+		if ( absint( $script->extra['group'] ) === 0 && self::all_dependencies_in_footer( $script ) ) {
+			return 1;
+		}
+		
+		return absint( $script->extra['group'] );
+	}
+
+    /**
 	 * Get the handles of all scripts enqueued for a given content node
 	 *
 	 * @param array<string, string> $queue      List of scripts for a given content node.
