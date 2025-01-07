@@ -86,7 +86,7 @@ class Schema {
                 'interfaces' => [ 'Node' ],
                 'fields' => [
                     'id' => [
-                        'type' => 'ID',
+                        'type' => [ 'non_null' => 'ID' ],
                         'description' => __( 'The global ID of the URI Assets object.', 'nextpress' ),
                     ],
                     'uri' => [
