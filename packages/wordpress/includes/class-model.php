@@ -50,15 +50,16 @@ class Model extends Base {
 		$context    = \WPGraphQL::get_app_context();
 		$promise = $context->node_resolver->resolve_uri( $this->path );
 		\GraphQL\Deferred::runQueue();
+
 		$this->data = $promise->result;
 
-		$allowed_restricted_fields = array(
+		$allowed_restricted_fields = [
 			'isRestricted',
 			'isPrivate',
 			'isPublic',
 			'id',
 			'databaseId',
-		);
+		];
 
 		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
 		$restricted_cap = apply_filters( 'uri_assets_restricted_cap', '' );
@@ -84,6 +85,7 @@ class Model extends Base {
 	 */
 	public static function all_dependencies_in_footer( \_WP_Dependency $script ) {
 		$dependencies = $script->deps;
+
 		foreach ( $dependencies as $handle ) {
 			$dependency = wp_scripts()->registered[ $handle ];
 			if ( 1 === self::get_script_location( $dependency ) ) {
@@ -106,6 +108,11 @@ class Model extends Base {
 			return 0;
 		}
 
+		// if ($script->handle === "stripe" || $script->handle ===  "jquery-blockui") {
+		// 	return 0;
+		// }
+
+		// absint( $script->extra['group'] ) === 0 &&  and 1
 		if ( self::all_dependencies_in_footer( $script ) ) {
 			return 0;
 		}
@@ -123,7 +130,7 @@ class Model extends Base {
 	 */
 	protected function flatten_enqueued_assets_list( array $queue, $wp_assets ) {
 		$registered_scripts = $wp_assets->registered;
-		$handles            = array();
+		$handles            = [];
 		foreach ( $queue as $handle ) {
 			if ( empty( $registered_scripts[ $handle ] ) ) {
 				continue;
@@ -181,7 +188,7 @@ class Model extends Base {
 	 */
 	protected function init() {
 		if ( empty( $this->fields ) ) {
-			$this->fields = array(
+			$this->fields = [
 				'ID'                       => function () {
 					return $this->path;
 				},
@@ -204,16 +211,16 @@ class Model extends Base {
 					$this->data->contentRendered;
 					$this->data->ID;
 
-					do_action( 'get_sidebar', null, array() );
+					do_action( 'get_sidebar', null, [] );
 					do_action( 'wp_footer' );
 					ob_get_clean();
 
 					// Sort and organize the enqueued scripts.
-					$queue = $this->flatten_enqueued_assets_list( $wp_scripts->queue ?? array(), $wp_scripts );
+					$queue = $this->flatten_enqueued_assets_list( $wp_scripts->queue ?? [], $wp_scripts );
 
 					// Reset the scripts queue to avoid conflicts with other queries.
 					$wp_scripts->reset();
-					$wp_scripts->queue = array();
+					$wp_scripts->queue = [];
 
 					return $queue;
 				},
@@ -230,19 +237,19 @@ class Model extends Base {
 					$this->data->contentRendered;
 					$this->data->ID;
 
-					do_action( 'get_sidebar', null, array() );
+					do_action( 'get_sidebar', null, [] );
 					wp_footer();
 					ob_get_clean();
 
 					// Sort and organize the enqueued stylesheets.
-					$queue = $this->flatten_enqueued_assets_list( $wp_styles->queue ?? array(), $wp_styles );
+					$queue = $this->flatten_enqueued_assets_list( $wp_styles->queue ?? [], $wp_styles );
 
 					$wp_styles->reset();
-					$wp_styles->queue = array();
+					$wp_styles->queue = [];
 
 					return $queue;
 				},
-			);
+			];
 		}//end if
 	}
 }
