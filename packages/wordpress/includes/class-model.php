@@ -1,21 +1,21 @@
 <?php
 /**
  * Class Model - Defines the Model class for the plugin.
- * 
- * @package NextPress\Uri_Assets  
+ *
+ * @package NextPress\Uri_Assets
  * @since 0.0.1
  */
 
 namespace NextPress\Uri_Assets;
 
 use GraphQLRelay\Relay;
-use WPGraphQL\Data\NodeResolver;
 use WPGraphQL\Model\Model as Base;
+use GraphQL\Error\UserError;
 
 /**
  * Class Tax_Rate
- *
- * @property string $data
+ * @property string                $path
+ * @property \WPGraphQL\Model\Post $data
  *
  * @property string   $ID
  * @property string   $id
@@ -26,20 +26,39 @@ use WPGraphQL\Model\Model as Base;
  * @package WPGraphQL\WooCommerce\Model
  */
 class Model extends Base {
-    /**
+	/**
+	 * URI/Path for asset
+	 *
+	 * @var string $path
+	 */
+	protected $path;
+
+	/**
+	 * Node connected to URI/Path
+	 *
+	 * @var \WPGraphQL\Model\Post $data
+	 */
+	protected $data;
+
+	/**
 	 * Model constructor
 	 *
 	 * @param string $uri URI/Path.
 	 */
 	public function __construct( $uri ) {
-		$this->data                = $uri;
-		$allowed_restricted_fields = [
+		$this->path = $uri;
+		$context    = \WPGraphQL::get_app_context();
+		$promise = $context->node_resolver->resolve_uri( $this->path );
+		\GraphQL\Deferred::runQueue();
+		$this->data = $promise->result;
+
+		$allowed_restricted_fields = array(
 			'isRestricted',
 			'isPrivate',
 			'isPublic',
 			'id',
 			'databaseId',
-		];
+		);
 
 		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
 		$restricted_cap = apply_filters( 'uri_assets_restricted_cap', '' );
@@ -47,8 +66,8 @@ class Model extends Base {
 		parent::__construct( $restricted_cap, $allowed_restricted_fields, null );
 	}
 
-    /**
-	 * Determines if the order item should be considered private
+	/**
+	 * Determines if the item should be considered private
 	 *
 	 * @return bool
 	 */
@@ -58,7 +77,7 @@ class Model extends Base {
 
 	/**
 	 * Determines if assets dependencies are all loaded in the footer.
-	 * 
+	 *
 	 * @param \_WP_Dependency $script  The script to check.
 	 *
 	 * @return bool
@@ -67,7 +86,7 @@ class Model extends Base {
 		$dependencies = $script->deps;
 		foreach ( $dependencies as $handle ) {
 			$dependency = wp_scripts()->registered[ $handle ];
-			if ( 1 === self:: get_script_location( $dependency ) ) {
+			if ( 1 === self::get_script_location( $dependency ) ) {
 				continue;
 			}
 
@@ -87,14 +106,14 @@ class Model extends Base {
 			return 0;
 		}
 
-		if ( absint( $script->extra['group'] ) === 0 && self::all_dependencies_in_footer( $script ) ) {
-			return 1;
+		if ( self::all_dependencies_in_footer( $script ) ) {
+			return 0;
 		}
-		
+
 		return absint( $script->extra['group'] );
 	}
 
-    /**
+	/**
 	 * Get the handles of all scripts enqueued for a given content node
 	 *
 	 * @param array<string, string> $queue      List of scripts for a given content node.
@@ -104,7 +123,7 @@ class Model extends Base {
 	 */
 	protected function flatten_enqueued_assets_list( array $queue, $wp_assets ) {
 		$registered_scripts = $wp_assets->registered;
-		$handles            = [];
+		$handles            = array();
 		foreach ( $queue as $handle ) {
 			if ( empty( $registered_scripts[ $handle ] ) ) {
 				continue;
@@ -126,74 +145,104 @@ class Model extends Base {
 	}
 
 	/**
-	 * Initializes the Order field resolvers.
+	 * Resolve the enqueued assets for an list of handles
+	 *
+	 * @param string   $type The type of asset to resolve
+	 * @param string[] $asset_handles The list of asset handles to resolve
+	 * @throws \GraphQL\Error\UserError If the asset type is invalid.
+	 *
+	 * @return string[]
+	 */
+	public static function resolve_enqueued_assets( $type, $asset_handles ) {
+		switch ( $type ) {
+			case 'script':
+				global $wp_scripts;
+				$enqueued_assets = $wp_scripts->registered;
+				break;
+			case 'style':
+				global $wp_styles;
+				$enqueued_assets = $wp_styles->registered;
+				break;
+			default:
+				/* translators: %s is the asset type */
+				throw new UserError( sprintf( __( '%s Invalid asset type', 'nextpress' ), $type ) ); //phpcs:ignore
+		}
+
+		return array_filter(
+			$enqueued_assets,
+			static function ( $asset ) use ( $asset_handles ) {
+				return in_array( $asset->handle, $asset_handles, true );
+			}
+		);
+	}
+
+	/**
+	 * Initializes the field resolvers.
 	 */
 	protected function init() {
 		if ( empty( $this->fields ) ) {
-			$this->fields = [
-                'ID' => function() {
-                    return $this->data;
-                },
-                'id' => function() {
-                    return ! empty( $this->data ) ? Relay::toGlobalId( 'asset', $this->data ) : null;
-                },
-                'uri' => function() {
-                    return $this->data;
-                },
-                'enqueuedScriptsQueue' => function() {
-                    global $wp_scripts;
+			$this->fields = array(
+				'ID'                       => function () {
+					return $this->path;
+				},
+				'id'                       => function () {
+					return ! empty( $this->path ) ? Relay::toGlobalId( 'asset', $this->path ) : null;
+				},
+				'uri'                      => function () {
+					return $this->path;
+				},
+				'enqueuedScriptsQueue'     => function () {
+					global $wp_scripts;
 
 					// Simulate WP template rendering.
 					ob_start();
 					do_action( 'wp_head' );
 					/**
-					 * We only need to call "$source->contentRendered;" for the simulation,
+					 * We only need to call "$this->data->contentRendered;" for the simulation,
 					 * however it is being assigned to a variable to quiet phpstan.
 					 */
-                    $context = \WPGraphQL::get_app_context();
-                    $node_resolver = new NodeResolver( $context );
-		            $content = $node_resolver->resolve_uri( $this->data );
-					unset( $content );
-					do_action( 'get_sidebar', null, [] );
+					$this->data->contentRendered;
+					$this->data->ID;
+
+					do_action( 'get_sidebar', null, array() );
 					do_action( 'wp_footer' );
 					ob_get_clean();
 
 					// Sort and organize the enqueued scripts.
-					$queue = $this->flatten_enqueued_assets_list( $wp_scripts->queue ?? [], $wp_scripts );
+					$queue = $this->flatten_enqueued_assets_list( $wp_scripts->queue ?? array(), $wp_scripts );
 
 					// Reset the scripts queue to avoid conflicts with other queries.
 					$wp_scripts->reset();
-					$wp_scripts->queue = [];
+					$wp_scripts->queue = array();
 
 					return $queue;
-                },
-                'enqueuedStylesheetsQueue' => function() {
-                    global $wp_styles;
+				},
+				'enqueuedStylesheetsQueue' => function () {
+					global $wp_styles;
 
 					// Simulate WP template rendering.
 					ob_start();
 					wp_head();
 					/**
-					 * We only need to call "$source->contentRendered;" for the simulation,
+					 * We only need to call "$this->data->contentRendered;" for the simulation,
 					 * however it is being assigned to a variable to quiet phpstan.
 					 */
-					$context = \WPGraphQL::get_app_context();
-                    $node_resolver = new NodeResolver( $context );
-		            $content = $node_resolver->resolve_uri( $this->data );
-					unset( $content );
-					do_action( 'get_sidebar', null, [] );
+					$this->data->contentRendered;
+					$this->data->ID;
+
+					do_action( 'get_sidebar', null, array() );
 					wp_footer();
 					ob_get_clean();
 
 					// Sort and organize the enqueued stylesheets.
-					$queue = $this->flatten_enqueued_assets_list( $wp_styles->queue ?? [], $wp_styles );
+					$queue = $this->flatten_enqueued_assets_list( $wp_styles->queue ?? array(), $wp_styles );
 
 					$wp_styles->reset();
-					$wp_styles->queue = [];
+					$wp_styles->queue = array();
 
 					return $queue;
-                },
-            ];
+				},
+			);
 		}//end if
 	}
 }
