@@ -108,11 +108,6 @@ class Model extends Base {
 			return 0;
 		}
 
-		// if ($script->handle === "stripe" || $script->handle ===  "jquery-blockui") {
-		// 	return 0;
-		// }
-
-		// absint( $script->extra['group'] ) === 0 &&  and 1
 		if ( self::all_dependencies_in_footer( $script ) ) {
 			return 0;
 		}
