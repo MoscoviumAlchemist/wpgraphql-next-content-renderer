@@ -41,6 +41,20 @@ class Model extends Base {
 	protected $data;
 
 	/**
+	 * Store the instance of the WP_Query
+	 *
+	 * @var \WP_Query
+	 */
+	protected $wp_query;
+
+	/**
+	 * Store the global post to reset during model tear down
+	 *
+	 * @var \WP_Post
+	 */
+	protected $global_post;
+
+	/**
 	 * Model constructor
 	 *
 	 * @param string $uri URI/Path.
@@ -64,6 +78,9 @@ class Model extends Base {
 		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
 		$restricted_cap = apply_filters( 'uri_assets_restricted_cap', '' );
 
+		if ( $this->data instanceof \WPGraphQL\Model\Post ) {
+			$this->setup();
+		}
 		parent::__construct( $restricted_cap, $allowed_restricted_fields, null );
 	}
 
@@ -85,7 +102,6 @@ class Model extends Base {
 	 */
 	public static function all_dependencies_in_footer( \_WP_Dependency $script ) {
 		$dependencies = $script->deps;
-
 		foreach ( $dependencies as $handle ) {
 			$dependency = wp_scripts()->registered[ $handle ];
 			if ( 1 === self::get_script_location( $dependency ) ) {
@@ -176,6 +192,73 @@ class Model extends Base {
 				return in_array( $asset->handle, $asset_handles, true );
 			}
 		);
+	}
+
+	public function setup() {
+		global $wp_query, $post;
+
+		/**
+		 * Store the global post before overriding
+		 */
+		$this->global_post = $post;
+
+		$incoming_post = get_post( $this->data->ID );
+
+		/**
+		 * Set the resolving post to the global $post. That way any filters that
+		 * might be applied when resolving fields can rely on global post and
+		 * post data being set up.
+		 */
+		if ( $incoming_post instanceof \WP_Post ) {
+			$id        = $incoming_post->ID;
+			$post_type = $incoming_post->post_type;
+			$post_name = $incoming_post->post_name;
+			$data      = $incoming_post;
+
+			/**
+			 * Clear out existing postdata
+			 */
+			$wp_query->reset_postdata();
+
+			/**
+			 * Parse the query to tell WordPress how to
+			 * setup global state
+			 */
+			if ( 'post' === $post_type ) {
+				$wp_query->parse_query(
+					[
+						'page' => '',
+						'p'    => $id,
+					]
+				);
+			} elseif ( 'page' === $post_type ) {
+				$wp_query->parse_query(
+					[
+						'page'     => '',
+						'pagename' => $post_name,
+					]
+				);
+			} elseif ( 'attachment' === $post_type ) {
+				$wp_query->parse_query(
+					[
+						'attachment' => $post_name,
+					]
+				);
+			} else {
+				$wp_query->parse_query(
+					[
+						$post_type  => $post_name,
+						'post_type' => $post_type,
+						'name'      => $post_name,
+					]
+				);
+			}
+
+			$wp_query->setup_postdata( $data );
+			$GLOBALS['post']             = $data; // phpcs:ignore WordPress.WP.GlobalVariablesOverride
+			$wp_query->queried_object    = get_post( $this->data->ID );
+			$wp_query->queried_object_id = $this->data->ID;
+		}
 	}
 
 	/**
