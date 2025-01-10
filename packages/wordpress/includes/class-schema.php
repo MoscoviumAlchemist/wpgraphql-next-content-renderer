@@ -10,6 +10,7 @@ namespace NextPress\Uri_Assets;
 
 use WPGraphQL\Data\Connection\EnqueuedScriptsConnectionResolver;
 use WPGraphQL\Data\Connection\EnqueuedStylesheetConnectionResolver;
+use NextPress\Uri_Assets\Model;
 
 class Schema {
 	/**
